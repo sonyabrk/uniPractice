@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { nanoid } = require('nanoid');
 const cors = require('cors');
 const app = express();
@@ -6,16 +7,16 @@ const port = 3000;
 
 // Начальные данные (10 книг)
 let books = [
-  { id: nanoid(6), title: 'Мастер и Маргарита', category: 'Классика', description: 'Роман Михаила Булгакова.', price: 500, stock: 10, rating: 5, image: '' },
-  { id: nanoid(6), title: '1984', category: 'Антиутопия', description: 'Роман-антиутопия Джорджа Оруэлла.', price: 450, stock: 5, rating: 5, image: '' },
-  { id: nanoid(6), title: 'Гарри Поттер', category: 'Фэнтези', description: 'Первая книга о волшебнике.', price: 800, stock: 20, rating: 5, image: '' },
-  { id: nanoid(6), title: 'Преступление и наказание', category: 'Классика', description: 'Роман Фёдора Достоевского.', price: 400, stock: 8, rating: 4, image: '' },
-  { id: nanoid(6), title: 'Властелин колец', category: 'Фэнтези', description: 'Эпическая трилогия Дж. Р. Р. Толкина.', price: 1200, stock: 3, rating: 5, image: '' },
-  { id: nanoid(6), title: 'Гордость и предубеждение', category: 'Роман', description: 'Роман Джейн Остин.', price: 350, stock: 15, rating: 4, image: '' },
-  { id: nanoid(6), title: 'Великий Гэтсби', category: 'Классика', description: 'Роман Фрэнсиса Скотта Фицджеральда.', price: 300, stock: 12, rating: 4, image: '' },
-  { id: nanoid(6), title: 'Над пропастью во ржи', category: 'Классика', description: 'Роман Джерома Д. Сэлинджера.', price: 380, stock: 7, rating: 4, image: '' },
-  { id: nanoid(6), title: 'Убить пересмешника', category: 'Классика', description: 'Роман Харпер Ли.', price: 420, stock: 9, rating: 5, image: '' },
-  { id: nanoid(6), title: 'Маленький принц', category: 'Сказка', description: 'Повесть Антуана де Сент-Экзюпери.', price: 250, stock: 25, rating: 5, image: '' },
+  { id: nanoid(6), title: 'Мастер и Маргарита', category: 'Классика', description: 'Роман Михаила Булгакова.', price: 500, stock: 10, rating: 5, image: 'http://localhost:3000/images/book1.png' },
+  { id: nanoid(6), title: '1984', category: 'Антиутопия', description: 'Роман-антиутопия Джорджа Оруэлла.', price: 450, stock: 5, rating: 5, image: 'http://localhost:3000/images/book2.png' },
+  { id: nanoid(6), title: 'Гарри Поттер', category: 'Фэнтези', description: 'Первая книга о волшебнике.', price: 800, stock: 20, rating: 5, image: 'http://localhost:3000/images/book3.png' },
+  { id: nanoid(6), title: 'Преступление и наказание', category: 'Классика', description: 'Роман Фёдора Достоевского.', price: 400, stock: 8, rating: 4, image: 'http://localhost:3000/images/book4.png' },
+  { id: nanoid(6), title: 'Властелин колец', category: 'Фэнтези', description: 'Эпическая трилогия Дж. Р. Р. Толкина.', price: 1200, stock: 3, rating: 5, image: 'http://localhost:3000/images/book5.png' },
+  { id: nanoid(6), title: 'Гордость и предубеждение', category: 'Роман', description: 'Роман Джейн Остин.', price: 350, stock: 15, rating: 4, image: 'http://localhost:3000/images/book6.png' },
+  { id: nanoid(6), title: 'Великий Гэтсби', category: 'Классика', description: 'Роман Фрэнсиса Скотта Фицджеральда.', price: 300, stock: 12, rating: 4, image: 'http://localhost:3000/images/book7.png' },
+  { id: nanoid(6), title: 'Над пропастью во ржи', category: 'Классика', description: 'Роман Джерома Д. Сэлинджера.', price: 380, stock: 7, rating: 4, image: 'http://localhost:3000/images/book8.png' },
+  { id: nanoid(6), title: 'Убить пересмешника', category: 'Классика', description: 'Роман Харпер Ли.', price: 420, stock: 9, rating: 5, image: 'http://localhost:3000/images/book9.png' },
+  { id: nanoid(6), title: 'Маленький принц', category: 'Сказка', description: 'Повесть Антуана де Сент-Экзюпери.', price: 250, stock: 25, rating: 5, image: 'http://localhost:3000/images/book10.png' },
 ];
 
 app.use(express.json());
@@ -30,6 +31,8 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Настройка CORS
 app.use(cors({
