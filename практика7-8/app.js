@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const { nanoid } = require("nanoid");
 const bcrypt = require('bcrypt');
@@ -42,6 +43,8 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.json());
+app.use(express.static('.'));
+app.use(cors());
 
 // Логгер запросов
 app.use((req, res, next) => {
