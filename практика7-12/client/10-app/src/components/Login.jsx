@@ -23,15 +23,17 @@ function Login({ onLogin }) {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Вход в систему</h2>
-            {error && <p className="error">{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <input type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required />
-                <button type="submit">Войти</button>
-            </form>
-            <p>Нет аккаунта? <Link to="/register">Зарегистрироваться</Link></p>
+        <div style={{ flex: 1, position: 'relative', minHeight: 'calc(100vh - 60px)', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <div className="auth-container">
+                <h2>Вход в систему</h2>
+                {error && <p className="error">{error}</p>}
+                <form onSubmit={handleSubmit}>
+                    <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                    <input type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <button type="submit">Войти</button>
+                </form>
+                <p>Нет аккаунта? <Link to="/register">Зарегистрироваться</Link></p>
+            </div>
         </div>
     );
 }

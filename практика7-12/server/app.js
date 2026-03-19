@@ -5,9 +5,37 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
+
+// Создаём папку uploads если не существует
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Настройка multer — сохранение файлов в папку uploads/
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `${nanoid()}${ext}`);
+    }
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        const ok = allowed.test(path.extname(file.originalname).toLowerCase())
+                && allowed.test(file.mimetype);
+        ok ? cb(null, true) : cb(new Error('Только изображения (jpg, png, gif, webp)'));
+    }
+});
 
 // Конфигурация JWT
 const ACCESS_SECRET = 'super_secret_key_for_access_jwt';
@@ -40,6 +68,8 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(express.json());
 app.use(express.static('.'));
+// Отдаём загруженные файлы по пути /uploads/filename
+app.use('/uploads', express.static(uploadsDir));
 app.use(cors());
 
 // Логгер запросов
@@ -463,7 +493,7 @@ app.delete("/api/users/:id", authMiddleware, roleMiddleware(['admin']), (req, re
  *       201:
  *         description: Товар создан
  */
-app.post("/api/products", authMiddleware, roleMiddleware(['seller', 'admin']), (req, res) => {
+app.post("/api/products", authMiddleware, roleMiddleware(['seller', 'admin']), upload.single('image'), (req, res) => {
     const { title, category, description, price } = req.body;
     if (!title || price === undefined) {
         return res.status(400).json({ error: "title and price are required" });
@@ -473,7 +503,8 @@ app.post("/api/products", authMiddleware, roleMiddleware(['seller', 'admin']), (
         title,
         category: category || "",
         description: description || "",
-        price: Number(price)
+        price: Number(price),
+        image: req.file ? `/uploads/${req.file.filename}` : ""
     };
     products.push(newProduct);
     res.status(201).json(newProduct);
@@ -547,7 +578,7 @@ app.get("/api/products/:id", authMiddleware, roleMiddleware(['user', 'seller', '
  *       200:
  *         description: Товар обновлен
  */
-app.put("/api/products/:id", authMiddleware, roleMiddleware(['seller', 'admin']), (req, res) => {
+app.put("/api/products/:id", authMiddleware, roleMiddleware(['seller', 'admin']), upload.single('image'), (req, res) => {
     const productIndex = products.findIndex(p => p.id === req.params.id);
     if (productIndex === -1) {
         return res.status(404).json({ error: "product not found" });
@@ -557,6 +588,17 @@ app.put("/api/products/:id", authMiddleware, roleMiddleware(['seller', 'admin'])
     if (category !== undefined) products[productIndex].category = category;
     if (description !== undefined) products[productIndex].description = description;
     if (price !== undefined) products[productIndex].price = Number(price);
+
+    // Если загружено новое фото — удаляем старое и сохраняем новое
+    if (req.file) {
+        const oldImage = products[productIndex].image;
+        if (oldImage && oldImage.startsWith('/uploads/')) {
+            const oldPath = path.join(__dirname, oldImage);
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        }
+        products[productIndex].image = `/uploads/${req.file.filename}`;
+    }
+
     res.status(200).json(products[productIndex]);
 });
 
@@ -582,6 +624,12 @@ app.delete("/api/products/:id", authMiddleware, roleMiddleware(['admin']), (req,
     const productIndex = products.findIndex(p => p.id === req.params.id);
     if (productIndex === -1) {
         return res.status(404).json({ error: "product not found" });
+    }
+    // Удаляем файл с диска если он есть
+    const image = products[productIndex].image;
+    if (image && image.startsWith('/uploads/')) {
+        const filePath = path.join(__dirname, image);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
     products.splice(productIndex, 1);
     res.status(200).json({ message: "product deleted" });
