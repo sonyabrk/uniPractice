@@ -1,26 +1,13 @@
 {
-  "name": "Список дел",
-  "short_name": "Дела",
+  "name": "MEMO — Список дел",
+  "short_name": "MEMO",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f5f5",
-  "theme_color": "#222222",
-  "description": "Простое приложение для управления списком дел, работающее офлайн",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "description": "Минималистичное PWA-приложение для управления задачами. Работает офлайн.",
   "orientation": "portrait-primary",
-  "screenshots": [
-    {
-      "src": "icons/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "icons/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
   "icons": [
     {
       "src": "icons/favicon-16x16.png",
