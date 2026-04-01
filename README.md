@@ -15,16 +15,26 @@ PRACTICE/
 ├── практика3/          # JSON и внешние API (Postman)
 ├── практика4/          # API + React (полная связка клиент-сервер)
 ├── практика5/          # Расширенный REST API + Swagger
-└── практика7-12/       # Продолжение курса
-    ├── client/10-app/  # React-клиент (Vite)
-    │   └── src/
-    │       ├── api/
-    │       ├── components/
-    │       ├── App.jsx
-    │       └── main.jsx
-    └── server/         # Express-сервер
-        ├── uploads/
-        └── app.js
+├── практика7-12/       # Продолжение курса
+│   ├── client/10-app/  # React-клиент (Vite)
+│   │   └── src/
+│   │       ├── api/
+│   │       ├── components/
+│   │       ├── App.jsx
+│   │       └── main.jsx
+│   └── server/         # Express-сервер
+│       ├── uploads/
+│       └── app.js
+└── практика13-16/      # PWA: Service Worker, Manifest, App Shell, WebSocket + Push
+    ├── content/
+    │   ├── home.html   # Динамический контент главной страницы
+    │   └── about.html  # Страница «О приложении»
+    ├── icons/          # Иконки разных размеров
+    ├── index.html      # App Shell (каркас приложения)
+    ├── app.js          # Логика: навигация, задачи, Socket.IO, Push
+    ├── sw.js           # Service Worker (Cache First + Network First)
+    ├── manifest.json   # Web App Manifest
+    └── server.js       # Node.js сервер (Socket.IO + web-push)
 ```
 
 ---
@@ -312,6 +322,123 @@ app.get("/api/auth/me", authMiddleware, (req, res) => {
 
 ---
 
+## Практика 13 — Service Worker
+
+### Тема
+Технология **Service Worker**: фоновый скрипт браузера для кэширования ресурсов, перехвата сетевых запросов и обеспечения офлайн-доступа. Основа прогрессивных веб-приложений (PWA).
+
+### Что сделано
+Разработано веб-приложение для управления списком задач с поддержкой офлайн-режима. Данные сохраняются в `localStorage`, статические ресурсы кэшируются при первом посещении.
+
+**Реализованный функционал:**
+- Просмотр и добавление задач/заметок
+- Хранение данных в `localStorage` (данные доступны без сети)
+- Регистрация Service Worker через `navigator.serviceWorker.register()`
+- Кэширование статических ресурсов при событии `install`
+- Очистка устаревших кэшей при событии `activate`
+- Перехват запросов (`fetch`): сначала кэш, затем сеть
+- Страница загружается из кэша при отсутствии интернета
+
+### Технологии
+`Service Worker` · `Cache API` · `localStorage` · `HTML` · `JavaScript`
+
+---
+
+## Практика 14 — Web App Manifest
+
+### Тема
+**Web App Manifest** — JSON-файл, превращающий веб-приложение в PWA: установка на устройство, кастомные иконки, полноэкранный режим, настройка темы.
+
+### Что сделано
+Доработано приложение из Практики 13: добавлен манифест и набор иконок. Приложение можно установить на компьютер или мобильное устройство.
+
+**Реализованный функционал:**
+- Создан `manifest.json` с полями: `name`, `short_name`, `start_url`, `display`, `background_color`, `theme_color`, `description`, `icons`
+- Подготовлен набор иконок PNG разных размеров (16×16 до 512×512)
+- Манифест подключён в HTML через `<link rel="manifest">`
+- Добавлены мета-теги для Android (`mobile-web-app-capable`) и iOS (`apple-mobile-web-app-capable`, `apple-touch-icon`)
+- Service Worker обновлён: кэшируются иконки и `manifest.json`
+- Приложение устанавливается через кнопку в адресной строке Chrome и открывается в отдельном окне без браузерного интерфейса
+
+### Технологии
+`Web App Manifest` · `PWA` · `Service Worker` · `Cache API` · `HTML` · `JavaScript`
+
+---
+
+## Практика 15 — HTTPS + App Shell
+
+### Тема
+Настройка локального **HTTPS** с помощью `mkcert` и реализация архитектуры **App Shell** — мгновенная загрузка каркаса приложения с динамической подгрузкой контента.
+
+### Что сделано
+Приложение переработано под архитектуру App Shell: каркас (хедер, навигация, футер) кэшируется и загружается мгновенно, контент страниц загружается через `fetch` и кэшируется отдельно.
+
+**Структура проекта:**
+```
+практика13-16/
+├── content/
+│   ├── home.html   # Форма добавления задач и список
+│   └── about.html  # Информация о приложении
+├── index.html      # App Shell: только каркас интерфейса
+├── app.js          # Навигация + загрузка контента через fetch
+├── sw.js           # Service Worker с двумя кэшами
+└── manifest.json
+```
+
+**Реализованный функционал:**
+- `index.html` содержит только App Shell (хедер, навигация, тикер, футер)
+- Динамический контент подгружается через `fetch('./content/page.html')` и вставляется в `<main>`
+- **Два кэша в Service Worker:**
+  - `memo-shell-v1` — Cache First для статики (App Shell)
+  - `memo-content-v1` — Network First для динамических страниц (`/content/*`)
+- При отсутствии сети контент отдаётся из кэша, фолбек — `home.html`
+- Полностью переработан дизайн: dark industrial / brutalist стиль (шрифты Bebas Neue + Space Mono, неоново-жёлтый акцент)
+
+### Технологии
+`PWA` · `App Shell` · `Service Worker` · `Cache API` · `Fetch API` · `mkcert` · `http-server`
+
+---
+
+## Практика 16 — WebSocket + Push
+
+### Тема
+Двусторонняя связь в реальном времени через **WebSocket** (библиотека Socket.IO) и **Push-уведомления** через Web Push API — сообщения пользователю даже при закрытом приложении.
+
+### Что сделано
+Добавлен Node.js-сервер с поддержкой Socket.IO и web-push. Клиент подключается к серверу по WebSocket, при добавлении задачи событие рассылается всем вкладкам и отправляется системное push-уведомление.
+
+**Реализованный функционал:**
+- Создан `server.js` на Express + Socket.IO + web-push
+- Сгенерированы VAPID-ключи (`npx web-push generate-vapid-keys`)
+- При добавлении задачи клиент отправляет событие `newTask` на сервер
+- Сервер рассылает `taskAdded` всем подключённым клиентам
+- Всплывающее уведомление появляется во всех открытых вкладках (WebSocket)
+- Реализованы функции `subscribeToPush` / `unsubscribeFromPush` через `PushManager`
+- Эндпоинты `/subscribe` и `/unsubscribe` для управления push-подписками
+- В `sw.js` добавлен обработчик события `push` — показывает системное уведомление
+- В интерфейс добавлены кнопки «Включить уведомления» / «Отключить уведомления»
+
+**Эндпоинты сервера:**
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| `GET` | `/` | Раздача статики (App Shell) |
+| `POST` | `/subscribe` | Сохранить push-подписку |
+| `POST` | `/unsubscribe` | Удалить push-подписку |
+
+**Запуск:**
+```bash
+cd практика13-16
+npm install
+node server.js
+# Сервер запустится на http://localhost:3001
+```
+
+### Технологии
+`Node.js` · `Express.js` · `Socket.IO` · `web-push` · `VAPID` · `Push API` · `Service Worker` · `PWA`
+
+---
+
 ## Запуск проекта (практика7-12)
 
 ### Сервер
@@ -342,4 +469,5 @@ npm run dev
 | Аутентификация | bcrypt, jsonwebtoken (JWT) |
 | Документация | Swagger (OpenAPI 3.0), swagger-jsdoc, swagger-ui-express |
 | Тестирование | Postman |
-| Препроцессоры | SASS, LESS |
+| Препроцессоры | SASS, LESS || PWA | Service Worker, Cache API, Web App Manifest, App Shell, Fetch API |
+| Реальное время | Socket.IO, WebSocket, web-push, Push API, VAPID |
