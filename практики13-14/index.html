@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="manifest" href="./manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0a0a0a">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MEMO">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+
+  <link rel="icon" href="./icons/favicon-32x32.png" type="image/png">
+
+  <title>MEMO — Список дел</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:        #0a0a0a;
+      --surface:   #111111;
+      --border:    #222222;
+      --accent:    #d4f542;
+      --accent2:   #42f5a1;
+      --text:      #e8e8e8;
+      --muted:     #555555;
+      --danger:    #ff3b3b;
+      --font-mono: 'Space Mono', monospace;
+      --font-disp: 'Bebas Neue', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .logo {
+      font-family: var(--font-disp);
+      font-size: 2.4rem;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      padding: 14px 24px 14px 0;
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .header-status {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      padding-left: 24px;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .sw-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      margin-right: 8px;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .sw-dot.active { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+    .sw-dot.error  { background: var(--danger); }
+
+    .ticker-wrap {
+      overflow: hidden;
+      background: var(--accent);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ticker {
+      display: flex;
+      animation: ticker 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker span {
+      font-family: var(--font-disp);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: var(--bg);
+      padding: 0 32px;
+    }
+
+    .ticker span::before { content: '◆'; margin-right: 32px; }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    main {
+      flex: 1;
+      padding: 48px 24px;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-family: var(--font-disp);
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      letter-spacing: 0.04em;
+      line-height: 0.9;
+      color: var(--text);
+      margin-bottom: 48px;
+    }
+
+    .page-title em { font-style: normal; color: var(--accent); }
+    .page-title .outline { -webkit-text-stroke: 1px var(--border); color: rgba(255,255,255,0.6); }
+
+    .add-form {
+      display: flex;
+      gap: 0;
+      margin-bottom: 48px;
+      border: 1px solid var(--border);
+    }
+
+    .add-form input {
+      flex: 1;
+      background: var(--surface);
+      border: none;
+      outline: none;
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+
+    .add-form input::placeholder { color: var(--muted); }
+    .add-form input:focus { background: #161616; }
+
+    .add-form button {
+      font-family: var(--font-disp);
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0 28px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .add-form button:hover { background: #c8e83c; }
+    .add-form button:active { transform: scale(0.97); }
+
+    .tasks-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .tasks-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .tasks-count {
+      font-family: var(--font-disp);
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    #tasks-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    #tasks-list li {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border-left: 3px solid transparent;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #tasks-list li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0;
+      background: rgba(212,245,66,0.04);
+      transition: width 0.3s;
+    }
+
+    #tasks-list li:hover { border-left-color: var(--border); }
+    #tasks-list li:hover::before { width: 100%; }
+
+    #tasks-list li.done { border-left-color: var(--accent2); opacity: 0.5; }
+    #tasks-list li.done span { text-decoration: line-through; color: var(--muted); }
+
+    #tasks-list li input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--muted);
+      background: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    #tasks-list li input[type="checkbox"]:checked {
+      background: var(--accent2);
+      border-color: var(--accent2);
+    }
+
+    #tasks-list li input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px; top: 1px;
+      width: 6px; height: 10px;
+      border: 2px solid var(--bg);
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    #tasks-list li span { flex: 1; font-size: 0.88rem; line-height: 1.4; }
+
+    .del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      line-height: 1;
+      transition: color 0.2s;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+
+    .del:hover { color: var(--danger); }
+
+    .empty-state { padding: 64px 0; text-align: center; }
+
+    .empty-state .big-num {
+      font-family: var(--font-disp);
+      font-size: 8rem;
+      color: var(--border);
+      line-height: 1;
+    }
+
+    .empty-state p {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title   { animation: fadeUp 0.5s ease both; }
+    .add-form     { animation: fadeUp 0.5s 0.1s ease both; }
+    .tasks-header { animation: fadeUp 0.5s 0.2s ease both; }
+    #tasks-list   { animation: fadeUp 0.5s 0.25s ease both; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 12px; }
+      .logo  { font-size: 1.8rem; padding-right: 16px; }
+      main   { padding: 32px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">MEMO</div>
+    <div class="header-status">
+      <div class="sw-dot" id="sw-dot"></div>
+      <span id="status">инициализация</span>
+    </div>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>Offline First</span>
+      <span>PWA</span>
+      <span>Web App Manifest</span>
+      <span>Service Worker</span>
+      <span>localStorage</span>
+      <span>Install on Device</span>
+      <span>Offline First</span>
+      <span>PWA</span>
+      <span>Web App Manifest</span>
+      <span>Service Worker</span>
+      <span>localStorage</span>
+      <span>Install on Device</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="page-title">
+      ТВОИ<br>
+      <em>ЗАДАЧИ</em><br>
+      <span class="outline">НА СЕГОДНЯ</span>
+    </div>
+
+    <div class="add-form">
+      <input type="text" id="task-input" placeholder="Новая задача..." maxlength="200" autocomplete="off">
+      <button id="add-btn">+ Добавить</button>
+    </div>
+
+    <div class="tasks-header">
+      <span class="tasks-label">Всего задач</span>
+      <span class="tasks-count" id="tasks-count">0</span>
+      <span class="tasks-label" style="margin-left:24px;">Выполнено</span>
+      <span class="tasks-count" id="done-count" style="color: var(--accent2)">0</span>
+    </div>
+
+    <ul id="tasks-list"></ul>
+  </main>
+
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 const express = require('express');
-const http = require('http');
+const fs = require('fs');
+const https = require('https');
 const socketIo = require('socket.io');
 const webpush = require('web-push');
 const bodyParser = require('body-parser');
@@ -24,7 +25,13 @@ app.use(express.static(path.join(__dirname, './')));
 
 let subscriptions = [];
 
-const server = http.createServer(app);
+const server = https.createServer(
+  {
+    key: fs.readFileSync('localhost-key.pem'),
+    cert: fs.readFileSync('localhost.pem'),
+  },
+  app
+);
 const io = socketIo(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] }
 });

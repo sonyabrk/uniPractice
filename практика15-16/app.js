@@ -4,7 +4,7 @@ const aboutBtn   = document.getElementById('about-btn');
 const statusEl   = document.getElementById('status');
 const swDot      = document.getElementById('sw-dot');
 
-const socket = io('http://localhost:3001');
+const socket = io('https://localhost:3001');
 
 function setActiveButton(activeId) {
   [homeBtn, aboutBtn].forEach(btn => btn.classList.remove('active'));
