@@ -179,7 +179,7 @@ async function subscribeToPush() {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array('BBPvjIngJ9Cw71rr6xd4lzFaAPbFnaiOGbqb4fGwlX93YNjeZIenxIzT-q7LTJb_KYpIuSw-0DMVq63s0LzBUmA')
     });
-    await fetch('http://localhost:3001/subscribe', {
+    await fetch('https://localhost:3001/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subscription)
@@ -195,7 +195,7 @@ async function unsubscribeFromPush() {
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
   if (subscription) {
-    await fetch('http://localhost:3001/unsubscribe', {
+    await fetch('https://localhost:3001/unsubscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ endpoint: subscription.endpoint })

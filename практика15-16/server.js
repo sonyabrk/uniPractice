@@ -70,5 +70,5 @@ app.post('/unsubscribe', (req, res) => {
 
 const PORT = 3001;
 server.listen(PORT, () => {
-  console.log(`Сервер запущен на http://localhost:${PORT}`);
+  console.log(`Сервер запущен на https://localhost:${PORT}`);
 });
