@@ -3,16 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0a0a0a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MEMO">
-  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="icon" href="./icons/favicon-32x32.png" type="image/png">
-
+  <link rel="icon" href="/icons/favicon-32x32.png" type="image/png">
   <title>MEMO - Список дел</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,13 +26,12 @@
       --text:      #e8e8e8;
       --muted:     #555555;
       --danger:    #ff3b3b;
+      --success:   #42f5a1;
       --font-mono: 'Space Mono', monospace;
       --font-disp: 'Bebas Neue', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
 
     body {
       font-family: var(--font-mono);
@@ -47,16 +43,7 @@
       overflow-x: hidden;
     }
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.5;
-    }
-
+    /* App Shell: шапка — кэшируется, грузится мгновенно */
     header {
       position: sticky;
       top: 0;
@@ -66,7 +53,6 @@
       padding: 0 24px;
       display: flex;
       align-items: stretch;
-      gap: 0;
     }
 
     .logo {
@@ -82,44 +68,6 @@
       align-items: center;
     }
 
-    nav {
-      display: flex;
-      align-items: stretch;
-      gap: 0;
-      flex: 1;
-    }
-
-    .tab-btn {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      background: none;
-      border: none;
-      border-right: 1px solid var(--border);
-      padding: 0 28px;
-      cursor: pointer;
-      transition: color 0.2s, background 0.2s;
-      position: relative;
-    }
-
-    .tab-btn::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transition: transform 0.2s;
-    }
-
-    .tab-btn.active { color: var(--accent); }
-    .tab-btn.active::after { transform: scaleX(1); }
-    .tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
-
     .header-status {
       margin-left: auto;
       display: flex;
@@ -129,6 +77,7 @@
       color: var(--muted);
       letter-spacing: 0.1em;
       text-transform: uppercase;
+      gap: 8px;
     }
 
     .sw-dot {
@@ -136,345 +85,219 @@
       height: 6px;
       border-radius: 50%;
       background: var(--muted);
-      margin-right: 8px;
       flex-shrink: 0;
       transition: background 0.3s;
     }
-
     .sw-dot.active { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
     .sw-dot.error  { background: var(--danger); }
 
+    /* App Shell: навигация — часть каркаса */
+    nav {
+      border-bottom: 1px solid var(--border);
+      display: flex;
+    }
+
+    .tab {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 12px 24px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Тикер */
     .ticker-wrap {
       overflow: hidden;
       background: var(--accent);
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
+      padding: 5px 0;
     }
 
     .ticker {
       display: flex;
-      gap: 0;
-      animation: ticker 20s linear infinite;
+      animation: ticker 22s linear infinite;
       white-space: nowrap;
     }
 
     .ticker span {
       font-family: var(--font-disp);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       letter-spacing: 0.1em;
       color: var(--bg);
-      padding: 0 32px;
+      padding: 0 28px;
     }
 
-    .ticker span::before { content: '◆'; margin-right: 32px; }
+    .ticker span::before { content: '◆'; margin-right: 28px; }
 
     @keyframes ticker {
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
     }
 
-    main {
+    /* App Shell: основной контейнер — куда грузится динамический контент */
+    #app-content {
       flex: 1;
-      padding: 48px 24px;
+      padding: 40px 24px;
       max-width: 860px;
       width: 100%;
       margin: 0 auto;
     }
 
-    .page-title {
-      font-family: var(--font-disp);
-      font-size: clamp(3rem, 8vw, 5.5rem);
-      letter-spacing: 0.04em;
-      line-height: 0.9;
-      color: var(--text);
-      margin-bottom: 48px;
-      position: relative;
-    }
-
-    .page-title em { font-style: normal; color: var(--accent); }
-    .page-title .outline { -webkit-text-stroke: 1px var(--border); color: rgba(255,255,255,0.624); }
-
-    .add-form {
-      display: flex;
-      gap: 0;
-      margin-bottom: 48px;
-      border: 1px solid var(--border);
-    }
-
-    .add-form input {
-      flex: 1;
-      background: var(--surface);
-      border: none;
-      outline: none;
-      padding: 16px 20px;
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      color: var(--text);
-      transition: background 0.2s;
-    }
-
-    .add-form input::placeholder { color: var(--muted); }
-    .add-form input:focus { background: #161616; }
-
-    .add-form button {
-      font-family: var(--font-disp);
-      font-size: 1.1rem;
-      letter-spacing: 0.1em;
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      padding: 0 28px;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      flex-shrink: 0;
-    }
-
-    .add-form button:hover { background: #c8e83c; }
-    .add-form button:active { transform: scale(0.97); }
-
-    .tasks-header {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 12px;
-    }
-
-    .tasks-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .tasks-count {
-      font-family: var(--font-disp);
-      font-size: 1.4rem;
-      color: var(--accent);
-      letter-spacing: 0.05em;
-    }
-
-    #tasks-list {
-      list-style: none;
+    /* Скелетон загрузки (часть App Shell) */
+    .skeleton {
       display: flex;
       flex-direction: column;
-      gap: 1px;
+      gap: 12px;
+      padding-top: 40px;
     }
-
-    #tasks-list li {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px 16px;
-      background: var(--surface);
-      border-left: 3px solid transparent;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #tasks-list li::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 0;
-      background: rgba(212,245,66,0.04);
-      transition: width 0.3s;
-    }
-
-    #tasks-list li:hover { border-left-color: var(--border); }
-    #tasks-list li:hover::before { width: 100%; }
-
-    #tasks-list li.done { border-left-color: var(--accent2); opacity: 0.5; }
-    #tasks-list li.done span { text-decoration: line-through; color: var(--muted); }
-
-    #tasks-list li input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 18px;
+    .skeleton-line {
       height: 18px;
-      border: 1px solid var(--muted);
-      background: none;
-      cursor: pointer;
-      flex-shrink: 0;
-      position: relative;
-      transition: border-color 0.2s, background 0.2s;
+      background: var(--surface);
+      border-radius: 2px;
+      animation: shimmer 1.5s infinite;
+    }
+    .skeleton-line.wide  { width: 60%; }
+    .skeleton-line.short { width: 35%; }
+    .skeleton-line.full  { width: 100%; }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
     }
 
-    #tasks-list li input[type="checkbox"]:checked { background: var(--accent2); border-color: var(--accent2); }
-
-    #tasks-list li input[type="checkbox"]:checked::after {
-      content: '';
-      position: absolute;
-      left: 4px; top: 1px;
-      width: 6px; height: 10px;
-      border: 2px solid var(--bg);
-      border-top: none;
-      border-left: none;
-      transform: rotate(45deg);
-    }
-
-    #tasks-list li span { flex: 1; font-size: 0.88rem; line-height: 1.4; }
-
-    .del {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 4px 6px;
-      line-height: 1;
-      transition: color 0.2s;
-      flex-shrink: 0;
-      font-family: var(--font-mono);
-    }
-
-    .del:hover { color: var(--danger); }
-
-    .empty-state { padding: 64px 0; text-align: center; }
-
-    .empty-state .big-num {
-      font-family: var(--font-disp);
-      font-size: 8rem;
-      color: var(--border);
-      line-height: 1;
-      letter-spacing: -0.02em;
-    }
-
-    .empty-state p {
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-
+    /* Footer с кнопками push */
     footer {
       border-top: 1px solid var(--border);
-      padding: 16px 24px;
+      padding: 14px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
       font-size: 0.65rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
-      flex-wrap: wrap;
     }
 
-    .push-btn {
+    .push-btns {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-push {
       font-family: var(--font-mono);
       font-size: 0.65rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       border: 1px solid var(--border);
       background: none;
-      cursor: pointer;
+      color: var(--muted);
       padding: 6px 14px;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    #enable-push  { color: var(--accent2); border-color: var(--accent2); }
-    #enable-push:hover  { background: var(--accent2); color: var(--bg); }
-    #disable-push { color: var(--danger); border-color: var(--danger); }
-    #disable-push:hover { background: var(--danger); color: #fff; }
+    .btn-push.enable:hover  { border-color: var(--accent2); color: var(--accent2); }
+    .btn-push.disable:hover { border-color: var(--danger); color: var(--danger); }
 
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      margin-bottom: 32px;
+    /* Всплывающее WS-уведомление */
+    .ws-toast {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #1a1a2e;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 12px 20px;
+      font-size: 0.8rem;
+      z-index: 9999;
+      animation: slideIn 0.3s ease;
+      max-width: 320px;
     }
 
-    .about-cell { background: var(--surface); padding: 28px 24px; }
-    .about-cell .label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-    .about-cell .value { font-family: var(--font-disp); font-size: 1.6rem; letter-spacing: 0.05em; color: var(--accent); }
-    .about-cell p { font-size: 0.82rem; line-height: 1.7; color: var(--text); }
+    .ws-toast strong { color: var(--accent); display: block; margin-bottom: 4px; }
 
-    .tech-list { list-style: none; display: flex; flex-direction: column; gap: 1px; }
-    .tech-list li { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--surface); font-size: 0.8rem; }
-    .tech-list li::before { content: '→'; color: var(--accent); font-size: 0.75rem; }
-
-    .loader { display: flex; gap: 6px; padding: 32px; align-items: center; justify-content: center; }
-    .loader span { width: 8px; height: 8px; background: var(--accent); animation: bounce 0.8s infinite alternate; }
-    .loader span:nth-child(2) { animation-delay: 0.2s; background: var(--accent2); }
-    .loader span:nth-child(3) { animation-delay: 0.4s; background: var(--muted); }
-
-    @keyframes bounce {
-      from { transform: scaleY(0.4); opacity: 0.4; }
-      to   { transform: scaleY(1.2); opacity: 1; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
     }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .page-title   { animation: fadeUp 0.5s ease both; }
-    .add-form     { animation: fadeUp 0.5s 0.1s ease both; }
-    .tasks-header { animation: fadeUp 0.5s 0.2s ease both; }
-    #tasks-list   { animation: fadeUp 0.5s 0.25s ease both; }
 
     @media (max-width: 600px) {
       header { padding: 0 12px; }
-      .logo  { font-size: 1.8rem; padding-right: 16px; }
-      .tab-btn { padding: 0 16px; }
-      main   { padding: 32px 16px; }
-      .about-grid { grid-template-columns: 1fr; }
+      .logo  { font-size: 1.8rem; padding-right: 14px; }
+      #app-content { padding: 24px 14px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ===== APP SHELL START (кэшируется, грузится мгновенно) ===== -->
   <header>
     <div class="logo">MEMO</div>
-    <nav>
-      <button class="tab-btn active" id="home-btn">/ Задачи</button>
-      <button class="tab-btn" id="about-btn">/ О приложении</button>
-    </nav>
     <div class="header-status">
       <div class="sw-dot" id="sw-dot"></div>
       <span id="status">инициализация</span>
     </div>
   </header>
 
+  <nav>
+    <button class="tab active" id="home-btn">Главная</button>
+    <button class="tab" id="about-btn">О приложении</button>
+  </nav>
+
   <div class="ticker-wrap">
     <div class="ticker">
       <span>Offline First</span>
       <span>PWA</span>
       <span>App Shell</span>
+      <span>Service Worker</span>
       <span>WebSocket</span>
-      <span>Push API</span>
-      <span>Socket.IO</span>
+      <span>Push Notifications</span>
+      <span>HTTPS</span>
+      <span>localStorage</span>
       <span>Offline First</span>
       <span>PWA</span>
       <span>App Shell</span>
+      <span>Service Worker</span>
       <span>WebSocket</span>
-      <span>Push API</span>
-      <span>Socket.IO</span>
+      <span>Push Notifications</span>
+      <span>HTTPS</span>
+      <span>localStorage</span>
     </div>
   </div>
 
+  <!-- Динамический контент (загружается через fetch) -->
   <main id="app-content">
-    <div class="loader">
-      <span></span><span></span><span></span>
+    <!-- Скелетон — видим пока грузится контент -->
+    <div class="skeleton">
+      <div class="skeleton-line wide"></div>
+      <div class="skeleton-line short"></div>
+      <div class="skeleton-line full"></div>
+      <div class="skeleton-line full"></div>
     </div>
   </main>
 
   <footer>
-    <span>MEMO v3.0 — WebSocket + Push</span>
-    <div style="display:flex;gap:8px;">
-      <button class="push-btn" id="enable-push">Включить уведомления</button>
-      <button class="push-btn" id="disable-push" style="display:none;">Отключить уведомления</button>
+    <span>MEMO PWA · App Shell · WebSocket · Push</span>
+    <div class="push-btns">
+      <button class="btn-push enable" id="enable-push">▲ Включить уведомления</button>
+      <button class="btn-push disable" id="disable-push" style="display:none;">✕ Отключить уведомления</button>
     </div>
-    <span>PWA · Offline · App Shell</span>
   </footer>
+  <!-- ===== APP SHELL END ===== -->
 
+  <!-- Socket.IO клиент (CDN) -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

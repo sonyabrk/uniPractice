@@ -1,28 +1,162 @@
-<div class="page-title">
-  О<br>
-  <em>ПРИЛОЖЕНИИ</em>
+<div class="about-content">
+  <div class="page-title" style="margin-bottom: 40px;">
+    О<br>
+    <em>ПРИЛОЖЕНИИ</em>
+  </div>
+
+  <div class="about-cards">
+    <div class="about-card">
+      <div class="about-card-label">Версия</div>
+      <div class="about-card-value">2.0.0</div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-label">Архитектура</div>
+      <div class="about-card-value">App Shell + PWA</div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-label">Хранилище</div>
+      <div class="about-card-value">localStorage</div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-label">Протокол</div>
+      <div class="about-card-value">HTTPS + WSS</div>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-section-title">Что умеет приложение</div>
+    <ul class="about-list">
+      <li>✦ Работает полностью офлайн (Service Worker + Cache API)</li>
+      <li>✦ Мгновенная загрузка каркаса (App Shell архитектура)</li>
+      <li>✦ Синхронизация задач в реальном времени (WebSocket / Socket.IO)</li>
+      <li>✦ Push-уведомления даже при закрытом приложении</li>
+      <li>✦ Устанавливается на устройство как нативное приложение (PWA)</li>
+      <li>✦ Безопасное соединение HTTPS через mkcert</li>
+    </ul>
+  </div>
+
+  <div class="about-section">
+    <div class="about-section-title">Технологии</div>
+    <div class="tech-tags">
+      <span class="tech-tag">Service Worker</span>
+      <span class="tech-tag">Web App Manifest</span>
+      <span class="tech-tag">Cache API</span>
+      <span class="tech-tag">Socket.IO</span>
+      <span class="tech-tag">Web Push API</span>
+      <span class="tech-tag">VAPID</span>
+      <span class="tech-tag">mkcert</span>
+      <span class="tech-tag">Node.js</span>
+      <span class="tech-tag">Express</span>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <div class="about-section-title">Дисциплина</div>
+    <p class="about-text">Фронтенд и бэкенд разработка · ИПТИП · Кафедра Индустриального программирования · 4 семестр 2025/2026</p>
+  </div>
 </div>
 
-<div class="about-grid">
-  <div class="about-cell">
-    <div class="label">Версия</div>
-    <div class="value">2.0.0</div>
-  </div>
-  <div class="about-cell">
-    <div class="label">Тип приложения</div>
-    <div class="value">PWA</div>
-  </div>
-  <div class="about-cell" style="grid-column: 1 / -1">
-    <div class="label">Описание</div>
-    <p>MEMO — минималистичное приложение для управления задачами, работающее полностью в браузере. Данные хранятся локально, приложение доступно без интернета.</p>
-  </div>
-</div>
+<style>
+  .page-title {
+    font-family: var(--font-disp);
+    font-size: clamp(3rem, 8vw, 5rem);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: var(--text);
+    animation: fadeUp 0.5s ease both;
+  }
+  .page-title em { font-style: normal; color: var(--accent); }
 
-<ul class="tech-list">
-  <li>App Shell архитектура — мгновенная загрузка интерфейса</li>
-  <li>Service Worker — кэширование и работа офлайн</li>
-  <li>Cache API — две стратегии: Cache First + Network First</li>
-  <li>localStorage — сохранение задач на устройстве</li>
-  <li>Web App Manifest — установка как нативное приложение</li>
-  <li>HTTPS — обязательное условие для Service Worker</li>
-</ul>
+  .about-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    margin-bottom: 40px;
+    border: 1px solid var(--border);
+    animation: fadeUp 0.5s 0.1s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .about-card {
+    background: var(--surface);
+    padding: 20px;
+  }
+
+  .about-card-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .about-card-value {
+    font-family: var(--font-disp);
+    font-size: 1.4rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .about-section {
+    margin-bottom: 32px;
+    animation: fadeUp 0.5s 0.15s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .about-section-title {
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  .about-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .about-list li {
+    font-size: 0.84rem;
+    color: var(--text);
+    padding: 10px 14px;
+    background: var(--surface);
+    border-left: 3px solid var(--border);
+    line-height: 1.4;
+  }
+
+  .tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tech-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    color: var(--muted);
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tech-tag:hover { color: var(--accent); border-color: var(--accent); }
+
+  .about-text {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>

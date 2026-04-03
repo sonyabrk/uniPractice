@@ -1,12 +1,12 @@
 {
   "name": "MEMO — Список дел",
   "short_name": "MEMO",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
-  "description": "Минималистичное PWA-приложение для управления задачами. Работает офлайн.",
+  "description": "PWA-приложение для управления задачами. App Shell, WebSocket, Push, Offline.",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -20,11 +20,6 @@
       "type": "image/png"
     },
     {
-      "src": "icons/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
       "src": "icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
@@ -34,6 +29,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ]
 }

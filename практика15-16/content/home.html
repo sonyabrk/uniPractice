@@ -1,19 +1,217 @@
-<div class="page-title">
-  ТВОИ<br>
-  <em>ЗАДАЧИ</em><br>
-  <span class="outline">НА СЕГОДНЯ</span>
+<div class="home-content">
+  <div class="page-title">
+    ТВОИ<br>
+    <em>ЗАДАЧИ</em><br>
+    <span class="outline">НА СЕГОДНЯ</span>
+  </div>
+
+  <div class="add-form">
+    <input type="text" id="task-input" placeholder="Новая задача..." maxlength="200" autocomplete="off">
+    <input type="datetime-local" id="task-datetime" title="Дата и время напоминания">
+    <button id="add-btn">+ Добавить</button>
+  </div>
+
+  <div class="tasks-header">
+    <span class="tasks-label">Всего задач</span>
+    <span class="tasks-count" id="tasks-count">0</span>
+    <span class="tasks-label" style="margin-left:24px;">Выполнено</span>
+    <span class="tasks-count" id="done-count" style="color: var(--accent2)">0</span>
+  </div>
+
+  <ul id="tasks-list"></ul>
 </div>
 
-<div class="add-form">
-  <input type="text" id="task-input" placeholder="Новая задача..." maxlength="200" autocomplete="off">
-  <button id="add-btn">+ Добавить</button>
-</div>
+<style>
+  .page-title {
+    font-family: var(--font-disp);
+    font-size: clamp(3rem, 8vw, 5rem);
+    letter-spacing: 0.04em;
+    line-height: 0.9;
+    color: var(--text);
+    margin-bottom: 40px;
+    animation: fadeUp 0.5s ease both;
+  }
 
-<div class="tasks-header">
-  <span class="tasks-label">Всего задач</span>
-  <span class="tasks-count" id="tasks-count">0</span>
-  <span class="tasks-label" style="margin-left:24px;">Выполнено</span>
-  <span class="tasks-count" id="done-count" style="color: var(--accent2)">0</span>
-</div>
+  .page-title em { font-style: normal; color: var(--accent); }
+  .page-title .outline { -webkit-text-stroke: 1px var(--border); color: rgba(255,255,255,0.5); }
 
-<ul id="tasks-list"></ul>
+  .add-form {
+    display: flex;
+    gap: 0;
+    margin-bottom: 40px;
+    border: 1px solid var(--border);
+    animation: fadeUp 0.5s 0.1s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .add-form input[type="text"] {
+    flex: 1;
+    background: var(--surface);
+    border: none;
+    outline: none;
+    padding: 14px 18px;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    color: var(--text);
+    transition: background 0.2s;
+  }
+
+  .add-form input[type="text"]::placeholder { color: var(--muted); }
+  .add-form input[type="text"]:focus { background: #161616; }
+
+  .add-form input[type="datetime-local"] {
+    background: var(--surface);
+    border: none;
+    border-left: 1px solid var(--border);
+    outline: none;
+    padding: 14px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s;
+    color-scheme: dark;
+  }
+
+  .add-form input[type="datetime-local"]:focus { background: #161616; color: var(--text); }
+
+  .add-form button {
+    font-family: var(--font-disp);
+    font-size: 1.05rem;
+    letter-spacing: 0.1em;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 0 24px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .add-form button:hover  { background: #c8e83c; }
+  .add-form button:active { transform: scale(0.97); }
+
+  .tasks-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    animation: fadeUp 0.5s 0.2s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .tasks-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .tasks-count {
+    font-family: var(--font-disp);
+    font-size: 1.3rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  #tasks-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    animation: fadeUp 0.5s 0.25s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  #tasks-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-left: 3px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #tasks-list li:hover { border-left-color: var(--border); }
+  #tasks-list li.done  { border-left-color: var(--accent2); opacity: 0.5; }
+  #tasks-list li.done span.task-text { text-decoration: line-through; color: var(--muted); }
+
+  #tasks-list li input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--muted);
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  #tasks-list li input[type="checkbox"]:checked {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  #tasks-list li input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 1px;
+    width: 6px; height: 9px;
+    border: 2px solid var(--bg);
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+
+  .task-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  span.task-text { font-size: 0.86rem; line-height: 1.4; }
+  span.task-dt { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.05em; }
+
+  .del {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .del:hover { color: var(--danger); }
+
+  .empty-state { padding: 60px 0; text-align: center; }
+
+  .empty-state .big-num {
+    font-family: var(--font-disp);
+    font-size: 7rem;
+    color: var(--border);
+    line-height: 1;
+  }
+
+  .empty-state p {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
