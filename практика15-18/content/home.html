@@ -5,10 +5,21 @@
     <span class="outline">НА СЕГОДНЯ</span>
   </div>
 
-  <div class="add-form">
-    <input type="text" id="task-input" placeholder="Новая задача..." maxlength="200" autocomplete="off">
-    <input type="datetime-local" id="task-datetime" title="Дата и время напоминания">
-    <button id="add-btn">+ Добавить</button>
+  <div class="form-block">
+    <div class="form-label">Быстрая заметка</div>
+    <div class="add-form" id="note-form-wrap">
+      <input type="text" id="task-input" placeholder="Новая задача..." maxlength="200" autocomplete="off">
+      <button id="add-btn">+ Добавить</button>
+    </div>
+  </div>
+
+  <div class="form-block">
+    <div class="form-label">С напоминанием <span class="form-label-badge">⏰ Push</span></div>
+    <div class="add-form reminder-form-wrap">
+      <input type="text" id="reminder-text" placeholder="Текст напоминания..." maxlength="200" autocomplete="off">
+      <input type="datetime-local" id="reminder-time" title="Дата и время напоминания">
+      <button id="reminder-btn">+ Добавить с напоминанием</button>
+    </div>
   </div>
 
   <div class="tasks-header">
@@ -16,6 +27,8 @@
     <span class="tasks-count" id="tasks-count">0</span>
     <span class="tasks-label" style="margin-left:24px;">Выполнено</span>
     <span class="tasks-count" id="done-count" style="color: var(--accent2)">0</span>
+    <span class="tasks-label" style="margin-left:24px;">Напоминаний</span>
+    <span class="tasks-count" id="reminder-count" style="color: #f5a542">0</span>
   </div>
 
   <ul id="tasks-list"></ul>
@@ -28,21 +41,43 @@
     letter-spacing: 0.04em;
     line-height: 0.9;
     color: var(--text);
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     animation: fadeUp 0.5s ease both;
   }
-
   .page-title em { font-style: normal; color: var(--accent); }
   .page-title .outline { -webkit-text-stroke: 1px var(--border); color: rgba(255,255,255,0.5); }
+
+  .form-block {
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s 0.1s ease both;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  }
+
+  .form-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-label-badge {
+    background: rgba(245,165,66,0.15);
+    color: #f5a542;
+    border: 1px solid rgba(245,165,66,0.3);
+    padding: 1px 7px;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
 
   .add-form {
     display: flex;
     gap: 0;
-    margin-bottom: 40px;
     border: 1px solid var(--border);
-    animation: fadeUp 0.5s 0.1s ease both;
-    opacity: 0;
-    animation-fill-mode: forwards;
   }
 
   .add-form input[type="text"] {
@@ -50,13 +85,12 @@
     background: var(--surface);
     border: none;
     outline: none;
-    padding: 14px 18px;
+    padding: 13px 16px;
     font-family: var(--font-mono);
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     color: var(--text);
     transition: background 0.2s;
   }
-
   .add-form input[type="text"]::placeholder { color: var(--muted); }
   .add-form input[type="text"]:focus { background: #161616; }
 
@@ -65,33 +99,34 @@
     border: none;
     border-left: 1px solid var(--border);
     outline: none;
-    padding: 14px 12px;
+    padding: 13px 10px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--muted);
     cursor: pointer;
-    transition: background 0.2s;
     color-scheme: dark;
+    transition: background 0.2s;
   }
-
   .add-form input[type="datetime-local"]:focus { background: #161616; color: var(--text); }
 
   .add-form button {
     font-family: var(--font-disp);
-    font-size: 1.05rem;
-    letter-spacing: 0.1em;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
     background: var(--accent);
     color: var(--bg);
     border: none;
-    padding: 0 24px;
+    padding: 0 20px;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
     flex-shrink: 0;
     white-space: nowrap;
   }
-
   .add-form button:hover  { background: #c8e83c; }
   .add-form button:active { transform: scale(0.97); }
+
+  .reminder-form-wrap button { background: #f5a542; }
+  .reminder-form-wrap button:hover { background: #e09430; }
 
   .tasks-header {
     display: flex;
@@ -103,11 +138,12 @@
     animation: fadeUp 0.5s 0.2s ease both;
     opacity: 0;
     animation-fill-mode: forwards;
+    flex-wrap: wrap;
   }
 
   .tasks-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted);
   }
@@ -132,18 +168,18 @@
   #tasks-list li {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     padding: 12px 14px;
     background: var(--surface);
     border-left: 3px solid transparent;
-    transition: border-color 0.2s, background 0.2s;
-    position: relative;
-    overflow: hidden;
+    transition: border-color 0.2s;
   }
 
-  #tasks-list li:hover { border-left-color: var(--border); }
-  #tasks-list li.done  { border-left-color: var(--accent2); opacity: 0.5; }
-  #tasks-list li.done span.task-text { text-decoration: line-through; color: var(--muted); }
+  #tasks-list li:hover        { border-left-color: var(--border); }
+  #tasks-list li.done         { border-left-color: var(--accent2); opacity: 0.5; }
+  #tasks-list li.done .task-text { text-decoration: line-through; color: var(--muted); }
+  #tasks-list li.has-reminder { border-left-color: #f5a542; }
+  #tasks-list li.has-reminder:hover { border-left-color: #f5a542; opacity: 1; }
 
   #tasks-list li input[type="checkbox"] {
     appearance: none;
@@ -157,58 +193,32 @@
     position: relative;
     transition: border-color 0.2s, background 0.2s;
   }
-
-  #tasks-list li input[type="checkbox"]:checked {
-    background: var(--accent2);
-    border-color: var(--accent2);
-  }
-
+  #tasks-list li input[type="checkbox"]:checked { background: var(--accent2); border-color: var(--accent2); }
   #tasks-list li input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
     left: 3px; top: 1px;
     width: 6px; height: 9px;
     border: 2px solid var(--bg);
-    border-top: none;
-    border-left: none;
+    border-top: none; border-left: none;
     transform: rotate(45deg);
   }
 
-  .task-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-  span.task-text { font-size: 0.86rem; line-height: 1.4; }
-  span.task-dt { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.05em; }
+  .task-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .task-text { font-size: 0.85rem; line-height: 1.4; }
+  .task-reminder { font-size: 0.62rem; color: #f5a542; letter-spacing: 0.05em; }
 
   .del {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 0.95rem;
-    cursor: pointer;
-    padding: 4px 6px;
-    line-height: 1;
-    transition: color 0.2s;
-    flex-shrink: 0;
+    background: none; border: none; color: var(--muted);
+    font-size: 0.9rem; cursor: pointer; padding: 4px 6px;
+    line-height: 1; transition: color 0.2s; flex-shrink: 0;
     font-family: var(--font-mono);
   }
-
   .del:hover { color: var(--danger); }
 
-  .empty-state { padding: 60px 0; text-align: center; }
-
-  .empty-state .big-num {
-    font-family: var(--font-disp);
-    font-size: 7rem;
-    color: var(--border);
-    line-height: 1;
-  }
-
-  .empty-state p {
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 8px;
-  }
+  .empty-state { padding: 56px 0; text-align: center; }
+  .empty-state .big-num { font-family: var(--font-disp); font-size: 7rem; color: var(--border); line-height: 1; }
+  .empty-state p { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(14px); }

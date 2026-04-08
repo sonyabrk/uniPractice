@@ -1,5 +1,5 @@
-const CACHE_NAME         = 'memo-app-shell-v1';
-const DYNAMIC_CACHE_NAME = 'memo-dynamic-content-v1';
+const CACHE_NAME         = 'memo-app-shell-v2';
+const DYNAMIC_CACHE_NAME = 'memo-dynamic-content-v2';
 
 const ASSETS = [
   '/',
@@ -16,7 +16,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Install — кэшируем App Shell');
+  console.log('[SW] Install');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(ASSETS))
@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activate — чистим старые кэши');
+  console.log('[SW] Activate');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
@@ -39,21 +39,18 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  
-  if (event.request.method !== 'GET') {
-    return;
-  }
-  
+
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith('/socket.io')) return;
-  
+
+  // /content/* — Network First
   if (url.pathname.startsWith('/content/')) {
     event.respondWith(
       fetch(event.request)
-        .then(networkRes => {
-          const clone = networkRes.clone();
-          caches.open(DYNAMIC_CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return networkRes;
+        .then(res => {
+          const clone = res.clone();
+          caches.open(DYNAMIC_CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
         })
         .catch(() =>
           caches.match(event.request)
@@ -62,14 +59,15 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
-  
+
+  // Остальное — Cache First
   event.respondWith(
     caches.match(event.request)
       .then(cached => cached || fetch(event.request)
-        .then(networkRes => {
-          const clone = networkRes.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return networkRes;
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return res;
         })
       )
   );
@@ -78,14 +76,11 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   console.log('[SW] Push получен');
 
-  let data = { title: 'MEMO — Новая задача', body: 'Добавлена новая задача' };
+  let data = { title: 'MEMO — Уведомление', body: '', reminderId: null };
 
   if (event.data) {
-    try {
-      data = event.data.json();
-    } catch (e) {
-      data.body = event.data.text();
-    }
+    try { data = event.data.json(); }
+    catch (e) { data.body = event.data.text(); }
   }
 
   const options = {
@@ -93,12 +88,14 @@ self.addEventListener('push', event => {
     icon:    '/icons/android-chrome-192x192.png',
     badge:   '/icons/favicon-32x32.png',
     vibrate: [200, 100, 200],
-    data:    { url: '/' },
-    actions: [
-      { action: 'open',    title: 'Открыть приложение' },
-      { action: 'dismiss', title: 'Закрыть' }
-    ]
+    data:    { reminderId: data.reminderId, url: '/' }
   };
+
+  if (data.reminderId) {
+    options.actions = [
+      { action: 'snooze', title: 'Отложить на 5 минут' }
+    ];
+  }
 
   event.waitUntil(
     self.registration.showNotification(data.title, options)
@@ -106,15 +103,33 @@ self.addEventListener('push', event => {
 });
 
 self.addEventListener('notificationclick', event => {
-  event.notification.close();
+  const notification = event.notification;
+  const action       = event.action;
 
-  if (event.action === 'dismiss') return;
+  console.log('[SW] notificationclick, action:', action);
 
+  if (action === 'snooze') {
+    const reminderId = notification.data.reminderId;
+    event.waitUntil(
+      fetch(`/snooze?reminderId=${reminderId}`, { method: 'POST' })
+        .then(res => {
+          console.log('[SW] Snooze выполнен:', res.status);
+          notification.close();
+        })
+        .catch(err => {
+          console.error('[SW] Snooze failed:', err);
+          notification.close();
+        })
+    );
+    return;
+  }
+
+  notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then(clientList => {
         for (const client of clientList) {
-          if (client.url === '/' && 'focus' in client) return client.focus();
+          if ('focus' in client) return client.focus();
         }
         if (clients.openWindow) return clients.openWindow('/');
       })

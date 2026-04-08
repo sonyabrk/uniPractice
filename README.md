@@ -25,16 +25,16 @@ PRACTICE/
 │   └── server/         # Express-сервер
 │       ├── uploads/
 │       └── app.js
-└── практика13-16/      # PWA: Service Worker, Manifest, App Shell, WebSocket + Push
+└── практика13-17/      # PWA: Service Worker, Manifest, App Shell, WebSocket, Push, Напоминания
     ├── content/
-    │   ├── home.html   # Динамический контент главной страницы
+    │   ├── home.html   # Две формы: быстрая заметка + заметка с напоминанием
     │   └── about.html  # Страница «О приложении»
     ├── icons/          # Иконки разных размеров
     ├── index.html      # App Shell (каркас приложения)
-    ├── app.js          # Логика: навигация, задачи, Socket.IO, Push
-    ├── sw.js           # Service Worker (Cache First + Network First)
+    ├── app.js          # Логика: навигация, задачи, напоминания, Socket.IO, Push
+    ├── sw.js           # Service Worker (Cache First + Network First + Snooze)
     ├── manifest.json   # Web App Manifest
-    └── server.js       # Node.js сервер (Socket.IO + web-push)
+    └── server.js       # Node.js сервер (Socket.IO + web-push + таймеры + snooze)
 ```
 
 ---
@@ -322,6 +322,27 @@ app.get("/api/auth/me", authMiddleware, (req, res) => {
 
 ---
 
+## Запуск проекта (практика7-12)
+
+### Сервер
+```bash
+cd практика7-12/server
+npm install
+node app.js
+# Сервер запустится на http://localhost:3000
+# Swagger UI: http://localhost:3000/api-docs
+```
+
+### Клиент
+```bash
+cd практика7-12/client/10-app
+npm install
+npm run dev
+# Клиент запустится на http://localhost:5173
+```
+
+---
+
 ## Практика 13 — Service Worker
 
 ### Тема
@@ -439,24 +460,47 @@ node server.js
 
 ---
 
-## Запуск проекта (практика7-12)
+## Практика 17 — Детализация Push: напоминания
 
-### Сервер
+### Тема
+Расширенные возможности **Push-уведомлений**: создание заметок с указанием даты и времени напоминания, планирование уведомлений на сервере через `setTimeout`, кнопка **«Отложить на 5 минут»** (Snooze) прямо в системном уведомлении.
+
+### Что сделано
+Доработано приложение из Практики 16: добавлена вторая форма для создания заметки с напоминанием. Сервер планирует push-уведомление через `setTimeout` и хранит активные таймеры в `Map`. Service Worker обрабатывает действие `snooze` и отправляет запрос на сервер для переноса напоминания.
+
+**Реализованный функционал:**
+- В `content/home.html` добавлена форма с полями «текст напоминания» + `datetime-local`
+- Структура заметок в `localStorage` расширена: поля `id` (уникальный timestamp) и `reminder` (timestamp)
+- Задачи с напоминанием отображаются с оранжевой полоской и меткой времени
+- Клиент отправляет событие `newReminder` через Socket.IO на сервер
+- Сервер планирует push через `setTimeout`, хранит таймеры в `Map()`
+- В системном уведомлении кнопка **«Отложить на 5 минут»**
+- Service Worker перехватывает `snooze` и отправляет `POST /snooze?reminderId=...`
+- Сервер переносит таймер: `clearTimeout` + новый таймер +5 минут
+- Напоминания работают даже при закрытом приложении
+
+**Эндпоинты сервера:**
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| `POST` | `/subscribe` | Сохранить push-подписку |
+| `POST` | `/unsubscribe` | Удалить push-подписку |
+| `POST` | `/snooze?reminderId=N` | Отложить напоминание на 5 минут |
+| `GET` | `/test-push` | Тестовое уведомление |
+| `GET` | `/reminders` | Список активных напоминаний (отладка) |
+
+**Запуск:**
 ```bash
-cd практика7-12/server
+cd практика13-17
 npm install
-node app.js
-# Сервер запустится на http://localhost:3000
-# Swagger UI: http://localhost:3000/api-docs
+bash setup.sh
+mkcert -install && mkcert localhost 127.0.0.1 ::1
+node server.js
+# https://localhost:3001
 ```
 
-### Клиент
-```bash
-cd практика7-12/client/10-app
-npm install
-npm run dev
-# Клиент запустится на http://localhost:5173
-```
+### Технологии
+`Node.js` · `Express.js` · `Socket.IO` · `web-push` · `VAPID` · `Push API` · `Service Worker` · `Notification Actions` · `Snooze` · `setTimeout` · `Map` · `mkcert` · `HTTPS`
 
 ---
 
@@ -469,5 +513,6 @@ npm run dev
 | Аутентификация | bcrypt, jsonwebtoken (JWT) |
 | Документация | Swagger (OpenAPI 3.0), swagger-jsdoc, swagger-ui-express |
 | Тестирование | Postman |
-| Препроцессоры | SASS, LESS || PWA | Service Worker, Cache API, Web App Manifest, App Shell, Fetch API |
-| Реальное время | Socket.IO, WebSocket, web-push, Push API, VAPID |
+| Препроцессоры | SASS, LESS |
+| PWA | Service Worker, Cache API, Web App Manifest, App Shell, Fetch API |
+| Реальное время | Socket.IO, WebSocket, web-push, Push API, VAPID, Notification Actions |
