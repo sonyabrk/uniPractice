@@ -75,7 +75,7 @@ function cacheMiddleware(keyBuilder, ttl) {
             next();
         } catch (err) {
             console.error('Cache read error:', err);
-            next(); // при ошибке Redis — продолжаем без кэша
+            next(); 
         }
     };
 }
