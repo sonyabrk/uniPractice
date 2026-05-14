@@ -24,7 +24,9 @@ PRACTICE/
 ├── практика20/         # MongoDB + Node.js REST API
 ├── практика21/         # Кэширование с Redis
 ├── практика22/         # Балансировка нагрузки (Nginx + HAProxy)
-└── практика23/         # Контейнеризация с Docker + Docker Compose
+├── практика23/         # Контейнеризация с Docker + Docker Compose
+├── практика25/         # Инструменты сборки: Webpack и Vite
+└── практика26/         # GraphQL и Apollo
 ```
 
 ---
@@ -289,6 +291,74 @@ curl http://localhost/
 
 ---
 
+## Практика 25 — Инструменты сборки: Webpack и Vite
+
+**Тема:** Инструменты сборки фронтенд-приложений — Webpack и Vite, оптимизация бандла: code splitting, tree-shaking, lazy loading, анализ зависимостей.
+
+**Что сделано:** React-приложение на Vite с настроенной оптимизацией production-сборки:
+- Два маршрута (главная страница и страница «О нас») через `react-router-dom`
+- Lazy loading компонента страницы «О нас» через `React.lazy` и `Suspense`
+- Ручное разделение чанков (`manualChunks`): `vendor` (react, react-dom) и `router` (react-router-dom)
+- Анализатор бандла `rollup-plugin-visualizer` — генерирует `bundle-report.html` с интерактивной картой зависимостей
+- Source maps для отладки production-сборки
+
+**Структура конфигурации (`vite.config.js`):**
+```js
+plugins: [react(), visualizer({ filename: 'bundle-report.html', gzipSize: true })]
+build:
+  rollupOptions.output.manualChunks: { vendor: ['react', 'react-dom'], router: ['react-router-dom'] }
+```
+
+**Запуск:**
+```bash
+cd практика25
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production-сборка + bundle-report.html
+npm run preview  # предпросмотр production-сборки
+```
+
+`React` · `Vite` · `react-router-dom` · `rollup-plugin-visualizer` · `Code Splitting` · `Lazy Loading` · `Tree-shaking`
+
+---
+
+## Практика 26 — GraphQL и Apollo
+
+**Тема:** GraphQL как альтернатива REST, система типов и схем SDL, Apollo Server, резолверы, вложенные связи между типами.
+
+**Что сделано:** GraphQL API для управления каталогом книг на Apollo Server:
+- Схема с типами `Book` и `Author` со связью «один-ко-многим» (у одного автора много книг)
+- Тип `Query`: получение всех книг (`books`), одной книги по ID (`book(id)`), всех авторов (`authors`)
+- Тип `Mutation`: создание автора (`createAuthor`) и книги (`createBook`) с проверкой существования автора
+- Вложенные резолверы: поле `author` в типе `Book` и поле `books` в типе `Author`
+- Хранение данных в памяти (массивы)
+- Сервер запускается через `startStandaloneServer`, доступен Apollo Sandbox для тестирования
+
+**Запуск:**
+```bash
+cd практика26
+npm install
+npm start        # node server.js
+# GraphQL Sandbox: http://localhost:4000
+```
+
+**Примеры запросов через Apollo Sandbox:**
+```graphql
+# Получить всех авторов
+query { authors { id name } }
+
+# Получить книги с автором
+query { books { id title author { name } } }
+
+# Создать автора и книгу
+mutation { createAuthor(name: "Лев Толстой") { id } }
+mutation { createBook(title: "Война и мир", authorId: "1") { id title } }
+```
+
+`Node.js` · `Apollo Server` · `GraphQL` · `SDL` · `Resolvers`
+
+---
+
 ## Стек технологий
 
 | Категория | Технологии |
@@ -303,4 +373,6 @@ curl http://localhost/
 | Контейнеризация | Docker, Docker Compose |
 | PWA | Service Worker, Cache API, Web App Manifest, App Shell |
 | Реальное время | Socket.IO, web-push, Push API, VAPID |
-| Тестирование | Postman |
+| GraphQL | Apollo Server, GraphQL SDL, Resolvers |
+| Сборка | Vite, Webpack, rollup-plugin-visualizer, Code Splitting |
+| Тестирование | Postman, Apollo Sandbox |
